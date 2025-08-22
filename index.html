@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Unidades</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2762a5ff, #a3a8c2ff);
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: #fff;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #1d5ebeff;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        button {
+            grid-column: span 2;
+            padding: 15px;
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 40px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background: #6a11cb;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Registro de Unidades</h1>
+        <form id="registroForm">
+            <div>
+                <label for="eco">Eco:</label>
+                <select name="eco" required>
+                    <option value="CT111 JETTA">CT111 JETTA</option>
+                    <option value="CT112 PATRIOT">CT112 PATRIOT</option>
+                    <option value="CT113 COMPASS">CT113 COMPASS</option>
+                    <option value="CT114 ESTACAS">CT114 ESTACAS</option>
+                </select>
+            </div>
+            <div>
+                <label for="solicita">Solicita:</label>
+                <input type="text" name="solicita" placeholder="Quien solicita" required>
+            </div>
+            <div>
+                <label for="fecha">Fecha:</label>
+                <input type="date" name="fecha" required>
+            </div>
+            <div>
+                <label for="hora_salida">Hora de salida:</label>
+                <input type="time" name="hora_salida" required>
+            </div>
+            <div>
+                <label for="lugar_salida">Lugar de salida:</label>
+                <input type="text" name="lugar_salida" placeholder="Lugar" required>
+            </div>
+            <div>
+                <label for="hora_llegada">Hora de llegada:</label>
+                <input type="time" name="hora_llegada" required>
+            </div>
+            <div>
+                <label for="lugar_llegada">Lugar de llegada:</label>
+                <input type="text" name="lugar_llegada" placeholder="Lugar" required>
+            </div>
+            <div class="full-width">
+                <label for="observaciones">Observaciones:</label>
+                <textarea name="observaciones" rows="3" placeholder="Observaciones adicionales"></textarea>
+            </div>
+
+            <button type="submit">Registrar</button>
+        </form>
+
+        <h2>Registros Guardados</h2>
+        <table id="tablaRegistros">
+            <thead>
+                <tr>
+                    <th>Eco</th>
+                    <th>Solicita</th>
+                    <th>Fecha</th>
+                    <th>Hora salida</th>
+                    <th>Lugar salida</th>
+                    <th>Hora llegada</th>
+                    <th>Lugar llegada</th>
+                    <th>Observaciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    
+    <script type="module">
+       
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-analytics.js";
+ 
+        const firebaseConfig = {
+    apiKey: "AIzaSyCy95MKxFh6L8i7rqrevbLraoT6L3lB64Q",
+    authDomain: "registrounidades-7d289.firebaseapp.com",
+    projectId: "registrounidades-7d289",
+    storageBucket: "registrounidades-7d289.firebasestorage.app",
+    messagingSenderId: "532527223166",
+    appId: "1:532527223166:web:a24e4e9ed8139ce56be32f",
+    measurementId: "G-76YL57M9TT"
+  };
+
+
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+
+        // Referencia a la colección
+        const registrosRef = collection(db, "registros");
+
+        // Guardar datos en Firebase
+        const form = document.getElementById("registroForm");
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const data = Object.fromEntries(new FormData(form).entries());
+            try {
+                await addDoc(registrosRef, data);
+                alert("✅ Registro guardado");
+                form.reset();
+            } catch (e) {
+                console.error("Error al guardar: ", e);
+            }
+        });
+
+        // Mostrar datos en tiempo real
+        onSnapshot(registrosRef, (snapshot) => {
+            const tbody = document.querySelector("#tablaRegistros tbody");
+            tbody.innerHTML = "";
+            snapshot.forEach((doc) => {
+                const d = doc.data();
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${d.eco}</td>
+                        <td>${d.solicita}</td>
+                        <td>${d.fecha}</td>
+                        <td>${d.hora_salida}</td>
+                        <td>${d.lugar_salida}</td>
+                        <td>${d.hora_llegada}</td>
+                        <td>${d.lugar_llegada}</td>
+                        <td>${d.observaciones}</td>
+                    </tr>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
